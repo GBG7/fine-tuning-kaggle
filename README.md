@@ -1,31 +1,57 @@
-# fine-tuning-kaggle
-MEOWWWWWWWWWWWWW -- DeepSeek R1 “Doctor-AI” Fine-Tuning (LoRA + Unsloth) 
+# Fine-Tuning DeepSeek R1-Distill-Llama-8B (Medical Reasoning)
 
-# DeepSeek-R1 Medical Fine-Tune 🩺🧠
-
-Fine-tunes **DeepSeek R1-Distill-Llama-8B** for clinical Q & A using a **parameter-efficient** recipe:
-
-* **Unsloth 4-bit quantization** + **LoRA (rank 16)** → fits on a single **NVIDIA P100 (16 GB)**  
-* Supervised fine-tuning on 500 chain-of-thought samples from the *Medical O1* dataset  
-* **2× fewer irrelevant tokens** and clearer reasoning versus the base model  
-* Full run (60 steps) in **< 25 min**; logged to **Weights & Biases**
+This project fine-tunes the DeepSeek R1-Distill-Llama-8B model on a medical chain-of-thought dataset using parameter-efficient techniques (LoRA + Unsloth). The goal is to improve step-by-step reasoning performance for clinical Q&A.
 
 ---
 
-## Quick Start
+## 🚀 How to Run
+
+1. Upload the provided `.ipynb` notebook to **Kaggle**.
+2. In **Settings > Accelerator**, select **GPU (P100)**.
+3. Obtain your API keys for:
+    - [Weights & Biases (W&B)](https://wandb.ai/) 
+    - [Hugging Face](https://huggingface.co/)
+4. On Kaggle, go to **Add-ons > Secrets**:
+    - Create a new secret: name = `hugging_face_token`, value = your Hugging Face API token.
+    - Create a new secret: name = `wnb_token`, value = your W&B API token.
+5. Run the notebook — full setup is automated.
+
+---
+
+## 🧰 Packages & Tools Used
+
+- [`unsloth`](https://github.com/unslothai/unsloth): Efficient fine-tuning and inference for LLMs
+  - `FastLanguageModel` to optimize inference & fine-tuning
+  - `get_peft_model` to enable LoRA-based fine-tuning
+- [`peft`](https://huggingface.co/docs/peft/index): LoRA support for parameter-efficient fine-tuning
+- Hugging Face ecosystem:
+  - `transformers`: Model handling, tokenization, and training
+  - `trl`: Supervised fine-tuning via `SFTTrainer` wrapper
+  - `datasets`: Dataset fetching & preprocessing
+- `torch`: Deep learning framework (PyTorch backend)
+- `wandb`: Real-time experiment tracking and logging
+
+---
+
+## 🩺 Dataset Used
+
+- **Medical O1 Reasoning SFT** — [View on Hugging Face](https://huggingface.co/datasets/FreedomIntelligence/medical-o1-reasoning-SFT)  
+  This dataset contains medical questions with chain-of-thought reasoning and final answers.
+
+To prevent the model from generating excessively long answers, an EOS (End-of-Sequence) token is appended to each training sample.
+
+---
+
+## 💡 Why LoRA?
+
+Training full LLMs requires updating billions of parameters, which demands significant compute resources.  
+**LoRA (Low-Rank Adaptation)** enables efficient fine-tuning by adding small trainable adapters to select layers, while keeping the original model weights frozen.
+
+- Only a fraction of parameters are updated (more than **90% reduction** in trainable size)
+- Significantly reduces compute/memory requirements
+- Maintains model quality for task-specific adaptation
+
+In this notebook, we applied LoRA using:
 
 ```python
-from unsloth import FastLanguageModel
-from transformers import AutoTokenizer
-
-model_id = "your-hf-org/deepseek-r1-medical-lora"
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name=model_id,
-    max_seq_length=2048,
-    load_in_4bit=True,
-)
-
-prompt = "### Question:\nWhat is the first-line therapy for Graves’ ophthalmopathy?\n### Response:\n<think>\n"
-FastLanguageModel.for_inference(model)
-print(tokenizer.decode(model.generate(tokenizer(prompt, return_tensors="pt").input_ids,
-                                     max_new_tokens=256)[0]))
+model_lora = FastLanguageModel.get_peft_model(model, ...)
