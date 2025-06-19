@@ -30,6 +30,7 @@ This project fine-tunes the DeepSeek R1-Distill-Llama-8B model on a medical chai
   - `datasets`: Dataset fetching & preprocessing
 - `torch`: Deep learning framework (PyTorch backend)
 - `wandb`: Real-time experiment tracking and logging
+- **NVIDIA CUDA (v11.8)**: GPU acceleration for efficient model training and inference   
 
 ---
 
