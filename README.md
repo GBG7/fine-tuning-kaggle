@@ -1,6 +1,6 @@
 # Fine-Tuning DeepSeek R1-Distill-Llama-8B (Medical Reasoning)
 
-This project fine-tunes the DeepSeek R1-Distill-Llama-8B model on a medical chain-of-thought dataset using parameter-efficient techniques (LoRA + Unsloth). The goal is to improve step-by-step reasoning performance for clinical Q&A.
+This project fine-tunes the DeepSeek R1-Distill-Llama-8B model on a medical chain-of-thought dataset using parameter-efficient techniques (**LoRA + Unsloth**) with **CUDA-accelerated training** on a single NVIDIA P100 GPU. The goal is to improve step-by-step reasoning performance for clinical Q&A.
 
 ---
 
